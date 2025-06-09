@@ -2,18 +2,28 @@ FROM node:18-alpine
 
 ARG N8N_VERSION=1.97.1
 
-RUN apk add --update graphicsmagick tzdata
+# Dependencias necesarias
+RUN apk add --no-cache \
+    graphicsmagick \
+    tzdata \
+    python3 \
+    make \
+    g++ \
+    libc6-compat
 
-USER root
+# Instala n8n globalmente
+RUN npm install -g n8n@${N8N_VERSION}
 
-RUN apk --update add --virtual build-dependencies python3 build-base && \
-    npm_config_user=root npm install --location=global n8n@${N8N_VERSION} && \
-    apk del build-dependencies
-
+# Define el working directory
 WORKDIR /data
 
-EXPOSE $PORT
+# Expone el puerto por defecto de n8n
+EXPOSE 5678
 
-ENV N8N_USER_ID=root
+# Variables necesarias para que funcione como root en Railway
+ENV N8N_USER_ID=0
+ENV N8N_GROUP_ID=0
+ENV N8N_PORT=5678
 
-CMD export N8N_PORT=$PORT && n8n start
+# Comando de inicio
+CMD ["n8n"]
